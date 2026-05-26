@@ -16,6 +16,8 @@ sf plugins install @joeo/sf-flow-audit
 
 ## Usage
 
+### `scan` — rank what's on fire
+
 ```bash
 sf flow-audit scan --target-org myorg
 sf flow-audit scan --target-org myorg --since 24h --limit 20
@@ -23,7 +25,18 @@ sf flow-audit scan --target-org myorg --verbose
 sf flow-audit scan --target-org myorg --json
 ```
 
+### `watch` — stream errors in real time
+
+```bash
+sf flow-audit watch --target-org myorg
+sf flow-audit watch --target-org myorg --duration 5m
+sf flow-audit watch --target-org myorg --replay -2          # backfill retained events
+sf flow-audit watch --target-org myorg --jsonl > errors.jsonl
+```
+
 ## Flags
+
+### `scan`
 
 | Flag | Default | Description |
 | --- | --- | --- |
@@ -32,6 +45,15 @@ sf flow-audit scan --target-org myorg --json
 | `--limit` | `10` | Number of top signatures to return |
 | `--verbose` | off | After the ranked table, print every raw failure row |
 | `--json` | off | Emit JSON instead of a table |
+
+### `watch`
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--target-org, -o` | (required) | Org alias or username |
+| `--duration` | (indefinite) | Stop after this duration (e.g. `30s`, `5m`, `1h`) |
+| `--replay` | `-1` | Replay-id: `-1` for new events only, `-2` for all retained events (typically last 24-72h) |
+| `--jsonl` | off | Emit each event as a JSON line (suitable for piping) |
 
 ## Sample output
 
@@ -76,16 +98,18 @@ Signature normalization strips:
 
 ## What flow errors does this see?
 
-**v0.1 source: `FlowInterview` records where `InterviewStatus = 'Error'`.**
+Two complementary data sources, both available on **any org** (no Event Monitoring license required):
 
-This catches paused / scheduled / autolaunched flow failures that Salesforce persists. It works on **any org** — no Event Monitoring license required.
+**`scan`** uses `FlowInterview` records where `InterviewStatus = 'Error'`.
+- ✅ Historical query (any time window, persisted indefinitely)
+- ❌ No error message text — only which flow died, on which element, when
 
-**What it does NOT include:**
-- The actual error message text (FlowInterview doesn't expose it via SOQL)
-- Failures that didn't generate a FlowInterview record
-- Apex-invoked flow exceptions caught upstream
+**`watch`** subscribes to the `FlowExecutionErrorEvent` platform event.
+- ✅ Full error message text, error code, element, user, flow version
+- ✅ Real-time as failures happen
+- ⚠️ Limited backfill (`--replay -2` retrieves only what's in the retention window, typically 24–72h)
 
-For richer detail (actual error strings, all flow types), [Event Monitoring](https://help.salesforce.com/s/articleView?id=sf.event_monitoring_intro.htm) and `EventLogFile` are the source of truth. v0.2 will add this as an opt-in `--source eventlog`.
+In practice, use `scan` for "what's been failing all week" and `watch` to drill into "what does the actual error say."
 
 ## What it does NOT do (yet)
 
@@ -97,9 +121,9 @@ These are deliberately out of scope. Use `--json` and pipe to your tool of choic
 
 ## Roadmap
 
-- **v0.2** — `--source eventlog` for actual error message text (Event Monitoring orgs)
-- **v0.3** — Setup Audit Trail correlation ("this spike started after deploy X on date Y")
-- **v0.4** — Optional `--explain` flag that pipes top signatures to Claude for a likely-cause summary (requires `ANTHROPIC_API_KEY`)
+- **v0.4** — Setup Audit Trail correlation ("this spike started after deploy X on date Y")
+- **v0.5** — Optional `--explain` flag that pipes top signatures to Claude for a likely-cause summary (requires `ANTHROPIC_API_KEY`)
+- **v0.6** — `watch --sink slack` / `--sink webhook` for piping events to chat/observability tools
 
 ## Development
 
