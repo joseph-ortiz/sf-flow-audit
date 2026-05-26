@@ -7,6 +7,7 @@ export type ScanResult = {
   since: string;
   scanned: number;
   results: RankedSignature[];
+  rawFailures?: FlowInterviewErrorRow[];
 };
 
 export default class FlowAuditScan extends SfCommand<ScanResult> {
@@ -18,6 +19,7 @@ export default class FlowAuditScan extends SfCommand<ScanResult> {
     '<%= config.bin %> <%= command.id %> --target-org myorg',
     '<%= config.bin %> <%= command.id %> --target-org myorg --since 24h --limit 20',
     '<%= config.bin %> <%= command.id %> --target-org myorg --json',
+    '<%= config.bin %> <%= command.id %> --target-org myorg --verbose',
   ];
 
   public static readonly flags = {
@@ -31,6 +33,10 @@ export default class FlowAuditScan extends SfCommand<ScanResult> {
       default: 10,
       min: 1,
       max: 200,
+    }),
+    verbose: Flags.boolean({
+      summary: 'After the ranked table, print every raw failure row (interview ID, flow, element, user, timestamp).',
+      default: false,
     }),
   };
 
@@ -69,6 +75,25 @@ export default class FlowAuditScan extends SfCommand<ScanResult> {
         });
         this.log('');
         this.log(`Sample interview ID for top signature: ${ranked[0].sampleInterviewId}`);
+
+        if (flags.verbose) {
+          this.log('');
+          this.log(`All raw failures (${result.records.length}):`);
+          const rawRows = result.records.map((r) => ({
+            id: r.Id,
+            flow: r.InterviewLabel ?? '(unlabeled)',
+            element: r.CurrentElement ?? '-',
+            user: r.CreatedById,
+            createdDate: r.CreatedDate,
+          }));
+          this.table(rawRows, {
+            id: { header: 'Interview ID' },
+            flow: { header: 'Flow' },
+            element: { header: 'Element' },
+            user: { header: 'User ID' },
+            createdDate: { header: 'Created' },
+          });
+        }
       }
     }
 
@@ -77,6 +102,7 @@ export default class FlowAuditScan extends SfCommand<ScanResult> {
       since: flags.since,
       scanned: result.totalSize,
       results: ranked,
+      ...(flags.verbose ? { rawFailures: result.records } : {}),
     };
   }
 }

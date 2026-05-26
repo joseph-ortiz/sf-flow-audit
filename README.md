@@ -15,6 +15,7 @@ sf plugins install @joeo/sf-flow-audit
 ```bash
 sf flow-audit scan --target-org myorg
 sf flow-audit scan --target-org myorg --since 24h --limit 20
+sf flow-audit scan --target-org myorg --verbose
 sf flow-audit scan --target-org myorg --json
 ```
 
@@ -25,6 +26,7 @@ sf flow-audit scan --target-org myorg --json
 | `--target-org, -o` | (required) | Org alias or username |
 | `--since` | `7d` | Window to scan (e.g. `24h`, `7d`, `30d`) |
 | `--limit` | `10` | Number of top signatures to return |
+| `--verbose` | off | After the ranked table, print every raw failure row |
 | `--json` | off | Emit JSON instead of a table |
 
 ## What it does
