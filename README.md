@@ -125,6 +125,12 @@ These are deliberately out of scope. Use `--json` and pipe to your tool of choic
 - **v0.5** — Optional `--explain` flag that pipes top signatures to Claude for a likely-cause summary (requires `ANTHROPIC_API_KEY`)
 - **v0.6** — `watch --sink slack` / `--sink webhook` for piping events to chat/observability tools
 
+### Known caveats / cleanup
+
+- `watch` uses `process.exit(0)` when `--duration` elapses because `StreamingClient.disconnect()` is private; cleaner shutdown would replace this with a custom Faye client (lets us return the `WatchResult` summary in `--json` mode too).
+- `watch --replay <id>` doesn't survive reconnects — if the CometD socket drops, the client re-handshakes at the latest replay-id, not where we were. A persistent replay-id checkpoint (file or org config) would fix this.
+- GitHub Actions still pin `actions/checkout@v4` and `setup-node@v4` (Node 20). Need to bump before Node 20 is removed from the runner on **2026-09-16**.
+
 ## Development
 
 ```bash
