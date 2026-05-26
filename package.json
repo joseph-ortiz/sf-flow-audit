@@ -1,0 +1,64 @@
+{
+  "name": "@joeo/sf-flow-audit",
+  "version": "0.1.0",
+  "description": "Salesforce CLI plugin that scans Flow errors and ranks what's on fire.",
+  "author": "Joseph Ortiz",
+  "license": "MIT",
+  "type": "module",
+  "repository": "joseph-ortiz/sf-flow-audit",
+  "homepage": "https://github.com/joseph-ortiz/sf-flow-audit",
+  "bugs": "https://github.com/joseph-ortiz/sf-flow-audit/issues",
+  "keywords": [
+    "sf-plugin",
+    "salesforce",
+    "flow",
+    "audit",
+    "observability"
+  ],
+  "main": "lib/index.js",
+  "files": [
+    "/bin",
+    "/lib",
+    "/messages",
+    "/oclif.manifest.json"
+  ],
+  "bin": {
+    "sf-flow-audit": "./bin/run.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@oclif/core": "^4",
+    "@salesforce/core": "^8",
+    "@salesforce/sf-plugins-core": "^11"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/chai": "^4",
+    "@types/mocha": "^10",
+    "chai": "^4",
+    "mocha": "^10",
+    "oclif": "^4",
+    "ts-node": "^10",
+    "typescript": "^5"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rm -rf lib oclif.manifest.json",
+    "lint": "tsc --noEmit",
+    "prepack": "npm run clean && npm run build && oclif manifest",
+    "postpack": "rm -f oclif.manifest.json",
+    "test": "mocha --forbid-only \"test/**/*.test.ts\""
+  },
+  "oclif": {
+    "bin": "sf",
+    "commands": "./lib/commands",
+    "topicSeparator": " ",
+    "topics": {
+      "flow-audit": {
+        "description": "Scan Salesforce Flow errors and rank what's on fire."
+      }
+    }
+  }
+}
