@@ -1,6 +1,6 @@
 {
   "name": "@joeo/sf-flow-audit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Salesforce CLI plugin that scans Flow errors and ranks what's on fire.",
   "author": "Joseph Ortiz",
   "license": "MIT",
